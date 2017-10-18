@@ -18,12 +18,28 @@
   }
 
   class Point {
-    x: number;
-    y: number;
+    private _x: number;
+    private _y: number;
 
     constructor(x: number, y: number) {
       this.x = x;
       this.y = y;
+    }
+
+    get x(): number {
+      return this._x;
+    }
+
+    set x(v: number) {
+      this._x = Math.floor(v);
+    }
+
+    get y(): number {
+      return this._y;
+    }
+
+    set y(v: number) {
+      this._y = Math.floor(v);
     }
 
     nearBy(p2: Point): boolean {
@@ -40,6 +56,14 @@
     innerPoints: Point[];
 
     state: PolygonState;
+
+    get center(): Point {
+      const psum = this.outerPoints.reduce((op, np) => {
+        return new Point(op.x + np.x, op.y + np.y);
+      });
+      const n = this.outerPoints.length;
+      return new Point(psum.x / n, psum.y / n);
+    }
 
     constructor(outerPoints: Point[] = [], innerPoints: Point[] = []) {
       this.outerPoints = outerPoints.slice();
@@ -144,6 +168,54 @@
         }
       }
     }
+
+    move(dx: number, dy: number) {
+      for (let p of this.innerPoints.concat(this.outerPoints)) {
+        p.x += dx;
+        p.y += dy;
+      }
+    }
+
+    rotate(angle: number) {
+      const c = this.center;
+      const rad = angle / 180 * Math.PI;
+      const crad = Math.cos(rad);
+      const srad = Math.sin(rad);
+      for (let p of this.innerPoints.concat(this.outerPoints)) {
+        const posX = p.x - c.x;
+        const posY = p.y - c.y;
+        const newPosX = posX * crad - posY * srad;
+        const newPosY = posX * srad + posY * crad;
+        p.x = c.x + newPosX;
+        p.y = c.y + newPosY;
+      }
+    }
+
+    scale(k: number) {
+      const c = this.center;
+      for (let p of this.innerPoints.concat(this.outerPoints)) {
+        const posX = p.x - c.x;
+        const posY = p.y - c.y;
+        const newPosX = posX * k;
+        const newPosY = posY * k;
+        p.x = c.x + newPosX;
+        p.y = c.y + newPosY;
+      }
+    }
+
+    flipX() {
+      const c = this.center;
+      for (let p of this.innerPoints.concat(this.outerPoints)) {
+        p.y = 2 * c.y - p.y;
+      }
+    }
+
+    flipY() {
+      const c = this.center;
+      for (let p of this.innerPoints.concat(this.outerPoints)) {
+        p.x = 2 * c.x - p.x;
+      }
+    }
   }
 
   let poly = new Polygon();
@@ -225,6 +297,36 @@
 
   canvas.addEventListener('click', (event) => {
     points.push(new Point(event.pageX, event.pageY));
+    repaint();
+  });
+
+  document.addEventListener('keypress', (event) => {
+    if (poly.state != PolygonState.POLYGON_DONE) {
+      return;
+    }
+
+    switch (event.charCode) {
+      case 109: // m
+      const dx = parseInt(prompt('move x:', '0'));
+      const dy = parseInt(prompt('move y:', '0'));
+      poly.move(dx, dy);
+      break;
+
+      case 114: // r
+      const angle = Number(prompt('rotate r: (in degree)'));
+      poly.rotate(angle);
+      break;
+
+      case 115: // s
+      const k = Number(prompt('scale k: '));
+      poly.scale(k);
+      break;
+
+      case 102: // f
+      const dir = prompt('flip in which axis (x or y)') === 'x';
+      poly[dir ? 'flipX' : 'flipY']();
+    }
+
     repaint();
   });
 })();
