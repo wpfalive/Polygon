@@ -184,7 +184,7 @@
       }
     }
 
-    fill(color = new Color(0, 0, 0)) {
+    fill() {
       if (this.state !== PolygonState.POLYGON_DONE) {
         return;
       }
@@ -439,6 +439,8 @@
     }
   }
 
+  let color: Color = new Color(0, 0, 0);
+
   function drawPixel(x: number, y: number) {
     ctx.fillRect(x, y, 1, 1);
   }
@@ -551,6 +553,13 @@
         points.length = 0;
         clipPoly.state = PolygonState.POLYGON_OUTER;
         console.log('clipping');
+        break;
+
+      case 105:  // i
+        const r = parseInt(prompt('new color (r):', '0'));
+        const g = parseInt(prompt('new color (g):', '0'));
+        const b = parseInt(prompt('new color (b):', '0'));
+        color = new Color(r, g, b);
         break;
     }
 
