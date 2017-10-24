@@ -6,6 +6,20 @@
   canvas.height = height;
   document.body.appendChild(canvas);
 
+  const keylabel = document.createElement('div');
+  keylabel.style.width = '200px';
+  keylabel.style.height = '100px';
+  keylabel.style.lineHeight = '100px';
+  keylabel.style.position = 'fixed';
+  keylabel.style.top = '20px';
+  keylabel.style.left = '20px';
+  keylabel.style.backgroundColor = '#ccc';
+  keylabel.style.fontSize = '2em';
+  keylabel.style.textAlign = 'center';
+  keylabel.innerText = '';
+
+  document.body.appendChild(keylabel);
+
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = 'black';
 
@@ -491,6 +505,8 @@
   });
 
   canvas.addEventListener('contextmenu', (event) => {
+    keylabel.innerText = 'Right Click';
+
     console.log(poly);
     if (poly.state === PolygonState.POLYGON_OUTER) {
       poly.state = PolygonState.POLYGON_INNER;
@@ -518,11 +534,15 @@
   });
 
   canvas.addEventListener('click', (event) => {
+    keylabel.innerText = 'Left Click';
+
     points.push(new Point(event.pageX, event.pageY));
     repaint();
   });
 
   document.addEventListener('keypress', (event) => {
+    keylabel.innerText = event.code;
+
     if (poly.state != PolygonState.POLYGON_DONE) {
       return;
     }
